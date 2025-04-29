@@ -4,12 +4,13 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import time
 from selenium.webdriver.common.by import By
-from django.test import LiveServerTestCase
+#from django.test import LiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.common.exceptions import WebDriverException
 
 MAX_WAIT = 10 #(1)
 
-class NewVisitorTest(LiveServerTestCase):
+class NewVisitorTest(StaticLiveServerTestCase):
 
     def setUp(self):
         self.browser = webdriver.Chrome()
@@ -31,7 +32,7 @@ class NewVisitorTest(LiveServerTestCase):
                 time.sleep(0.5) #(5)
 
     def test_can_start_a_list_and_retrieve_it_later(self):
-        
+    
         # 张三听说有一个在线待办事项的应用
         # 他去看了这个应用的首页
         self.browser.get(self.live_server_url)
@@ -81,7 +82,7 @@ class NewVisitorTest(LiveServerTestCase):
 
         #他注意到清单有一个唯一的URL
         zhangsan_list_url = self.browser.current_url 
-        self.assertRegex(zhangsan_list_url,'/lists/.+') #(1)
+        self.assertRegex(zhangsan_list_url, '/lists/.+') #(1)
 
         #现在一个新用户王五访问网站
         ##我们使用一个新浏览器会话
@@ -120,6 +121,17 @@ class NewVisitorTest(LiveServerTestCase):
         self.browser.set_window_size(1024,768)
 
         #他看到输入框完美地居中显示
+        inputbox = self.browser.find_element(By.ID,'id_new_item')
+        self.assertAlmostEqual(
+            inputbox.location['x'] + inputbox.size['width'] / 2,
+            512,
+            delta=10
+        )
+
+        #他新建了一个清单，看到输入框完美地居中显示
+        inputbox.send_keys('testing')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: testing')
         inputbox = self.browser.find_element(By.ID,'id_new_item')
         self.assertAlmostEqual(
             inputbox.location['x'] + inputbox.size['width'] / 2,
